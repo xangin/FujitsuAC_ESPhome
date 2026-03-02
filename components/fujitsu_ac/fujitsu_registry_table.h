@@ -1,0 +1,107 @@
+#pragma once
+#include <cstddef>
+#include "fujitsu_register.h"
+
+namespace fujitsu_ac {
+
+    class RegistryTable {
+    public:
+        RegistryTable() = default;
+
+        AcRegister *getRegister(Address address) {
+            for (size_t i = 0; i < TABLE_SIZE; i++) {
+                if (registerTable[i].address == address) {
+                    return &registerTable[i];
+                }
+            }
+            return &registerTable[0];  // fallback
+        }
+
+        const AcRegister *getAllRegisters(size_t &outSize) const {
+            outSize = TABLE_SIZE;
+            return registerTable;
+        }
+
+    private:
+        static constexpr size_t TABLE_SIZE = 70;
+
+        AcRegister registerTable[TABLE_SIZE] = {
+            {Address::Initial0,  0x0000, false},
+            {Address::Initial1,  0x0000, false},
+
+            {Address::Initial2,  0x0000, false},
+            {Address::Initial3,  0x0000, false},
+            {Address::Initial4,  0x0000, false},
+            {Address::Initial5,  0x0000, false},
+            {Address::Initial6,  0x0000, false},
+            {Address::Initial7,  0x0000, false},
+            {Address::Initial8,  0x0000, false},
+            {Address::Initial9,  0x0000, false},
+            {Address::Initial10, 0x0000, false},
+            {Address::Initial11, 0x0000, false},
+            {Address::Initial12, 0x0000, false},
+            {Address::Initial13, 0x0000, false},
+            {Address::HorizontalSwingSupported, 0x0000, false},
+            {Address::Initial15, 0x0000, false},
+
+            {Address::Initial16, 0x0000, false},
+            {Address::Initial17, 0x0000, false},
+            {Address::HumanSensorSupported, 0x0000, false},
+            {Address::Initial19, 0x0000, false},
+            {Address::Initial20, 0x0000, false},
+            {Address::Initial21, 0x0000, false},
+            {Address::Initial22, 0x0000, false},
+            {Address::Initial23, 0x0000, false},
+            {Address::Initial24, 0x0000, false},
+            {Address::Initial25, 0x0000, false},
+
+            {Address::Power,      0x0000, false},
+            {Address::Mode,       0x0000, false},
+            {Address::SetpointTemp, 0x0000, false},
+            {Address::FanSpeed,   0x0000, false},
+            {Address::VerticalAirflowSetterRegistry, 0x0000, false},
+            {Address::VerticalSwing,  0x0000, false},
+            {Address::VerticalAirflow, 0x0000, false},
+            {Address::HorizontalAirflowSetterRegistry, 0x0000, false},
+            {Address::HorizontalSwing, 0x0000, false},
+            {Address::HorizontalAirflow, 0x0000, false},
+            {Address::Register11, 0x0000, false},
+            {Address::ActualTemp, 0x0000, false},
+            {Address::Register13, 0x0000, false},
+
+            {Address::EconomyMode,  0x0000, false},
+            {Address::MinimumHeat,  0x0000, false},
+            {Address::HumanSensor,  0x0000, false},
+            {Address::Register17,   0x0000, false},
+            {Address::Register18,   0x0000, false},
+            {Address::Register19,   0x0000, false},
+            {Address::Register20,   0x0000, false},
+            {Address::Register21,   0x0000, false},
+            {Address::EnergySavingFan, 0x0000, false},
+            {Address::Register23,   0x0000, false},
+            {Address::Powerful,     0x0000, false},
+            {Address::OutdoorUnitLowNoise, 0x0000, false},
+            {Address::Register26,   0x0000, false},
+            {Address::Register27,   0x0000, false},
+            {Address::Register28,   0x0000, false},
+            {Address::Register29,   0x0000, false},
+            {Address::Register30,   0x0000, false},
+            {Address::Register31,   0x0000, false},
+            {Address::Register32,   0x0000, false},
+
+            {Address::Register33,   0x0000, false},
+            {Address::Register34,   0x0000, false},
+            {Address::Register35,   0x0000, false},
+            {Address::Register36,   0x0000, false},
+            {Address::Register37,   0x0000, false},
+            {Address::Register38,   0x0000, false},
+            {Address::Register39,   0x0000, false},
+            {Address::Register40,   0x0000, false},
+            {Address::Register41,   0x0000, false},
+            {Address::OutdoorTemp,  0x0000, false},
+            {Address::Register43,   0x0000, false},
+            {Address::Register44,   0x0000, false},
+        };
+    };
+
+}  // namespace fujitsu_ac

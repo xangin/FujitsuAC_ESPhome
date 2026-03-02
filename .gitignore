@@ -1,0 +1,11 @@
+# Python 快取
+__pycache__/
+*.pyc
+*.pyo
+
+# ESPHome 建構目錄
+.esphome/
+.pioenvs/
+
+# 原始函式庫（不需要上傳）
+FujitsuAC-master/

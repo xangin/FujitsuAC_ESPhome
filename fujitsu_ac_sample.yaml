@@ -1,0 +1,143 @@
+substitutions:
+  devicename: climate-fj          # 每台裝置需設定不同名稱，避免衝突
+  upper_devicename: "Climate-FJ"
+  model_name: "Climate-FJ"        # 可加註冷氣型號，例如 ASYG12KMTB
+
+esphome:
+  name: $devicename
+  friendly_name: ${upper_devicename}
+  comment: ESP32 for $model_name
+  name_add_mac_suffix: false
+  project:
+    name: "Fujitsu-AC.$model_name"
+    version: "ESP32"
+
+# ── External component（本機路徑）───────────────────────────────
+external_components:
+  - source:
+      type: local
+      path: FujitsuAC/components
+    components: [fujitsu_ac]
+
+# ── 平台 ────────────────────────────────────────────────────────
+esp32:
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+# ── WiFi ────────────────────────────────────────────────────────
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: ${devicename}
+    password: "12345678"
+
+captive_portal:
+
+# ── 日誌 ────────────────────────────────────────────────────────
+logger:
+  baud_rate: 0          # 停用序列日誌（UART 已被冷氣佔用）
+  # level: VERBOSE      # 需要除錯時取消此行注釋
+
+# ── HA API / OTA ─────────────────────────────────────────────
+api:
+
+ota:
+  - platform: esphome
+  - platform: web_server
+
+web_server:
+
+# ── UART（富士通冷氣採用 9600 baud，RX/TX 訊號需反向）──────────
+# ⚠ 重要：富士通 UART 訊號為反向邏輯（inverted），
+#   若使用支援硬體反向的 ESP32 UART，設定 invert: true；
+#   否則需在 RX/TX 線路上加裝 NPN 電晶體反向電路。
+uart:
+  id: fujitsu_uart
+  tx_pin:
+    number: GPIO7      # ESP32 UART2 TX2 17
+    inverted: true      # 富士通需要反向訊號
+  rx_pin:
+    number: GPIO6      # ESP32 UART2 RX2 16
+    inverted: true      # 富士通需要反向訊號
+  baud_rate: 9600
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  rx_buffer_size: 512
+
+# ── Climate（富士通冷氣主體）────────────────────────────────────
+climate:
+  - platform: fujitsu_ac
+    id: fujitsu_hp
+    name: "Fuji AC"
+    icon: mdi:heat-pump
+    uart_id: fujitsu_uart
+    visual:
+      min_temperature: 16
+      max_temperature: 30
+      temperature_step: 0.5
+
+    # 室內溫度感測器（從機器讀回，即 ActualTemp 暫存器）
+    indoor_temperature_sensor:
+      name: "ActualTemp"
+      icon: mdi:thermometer
+
+    # 戶外溫度感測器（從機器讀回，即 OutdoorTemp 暫存器）
+    outdoor_temperature_sensor:
+      name: "OutdoorTemp"
+      icon: mdi:thermometer-chevron-up
+
+    # 垂直風向選擇器（Position 1~6 + Swing）
+    vertical_vane_select:
+      name: "VerticalVaneSelect"
+      icon: mdi:arrow-up-down
+
+    # 水平風向選擇器（需機型支援，若不支援不會有作用）
+    horizontal_vane_select:
+      name: "HorizontalVaneSelect"
+      icon: mdi:arrow-left-right
+
+# ── 狀態 LED ──────────────────────────────────────────────────
+status_led:
+  pin:
+    number: GPIO8       # airm2m C3 藍色 LED
+
+# ── 額外開關 ──────────────────────────────────────────────────
+binary_sensor:
+  - platform: status
+    name: "Status"
+
+button:
+  - platform: restart
+    name: "Restart"
+
+# ── 系統感測器 ────────────────────────────────────────────────
+sensor:
+  - platform: wifi_signal
+    name: "WiFi signal"
+    update_interval: 60s
+
+  - platform: uptime
+    name: "Uptime"
+    filters:
+      - lambda: return x / 3600;
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+
+  - platform: internal_temperature
+    name: "ESP32 temperature"
+
+# ── 文字感測器 ────────────────────────────────────────────────
+text_sensor:
+  - platform: version
+    name: "ESPHome version"
+  - platform: wifi_info
+    ip_address:
+      name: "IP address"
+
+# ── 時間 ──────────────────────────────────────────────────────
+time:
+  - platform: homeassistant
+    id: homeassistant_time
