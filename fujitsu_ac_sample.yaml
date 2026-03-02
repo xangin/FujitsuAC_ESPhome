@@ -14,14 +14,16 @@ esphome:
 
 # ── External component（本機路徑）───────────────────────────────
 external_components:
-  - source:
-      type: local
-      path: FujitsuAC/components
-    components: [fujitsu_ac]
+  - source: github://xangin/FujitsuAC_ESPhome
+    components: [ fujitsu_ac ]
+  #- source:
+  #    type: local
+  #    path: FujitsuAC/components
+  #  components: [fujitsu_ac]
 
 # ── 平台 ────────────────────────────────────────────────────────
 esp32:
-  variant: esp32c3
+  variant: esp32
   framework:
     type: esp-idf
 
@@ -56,10 +58,10 @@ web_server:
 uart:
   id: fujitsu_uart
   tx_pin:
-    number: GPIO7      # ESP32 UART2 TX2 17
+    number: GPIO17      # ESP32 UART2 TX2 17
     inverted: true      # 富士通需要反向訊號
   rx_pin:
-    number: GPIO6      # ESP32 UART2 RX2 16
+    number: GPIO16      # ESP32 UART2 RX2 16
     inverted: true      # 富士通需要反向訊號
   baud_rate: 9600
   data_bits: 8
@@ -102,7 +104,7 @@ climate:
 # ── 狀態 LED ──────────────────────────────────────────────────
 status_led:
   pin:
-    number: GPIO8       # airm2m C3 藍色 LED
+    number: GPIO4
 
 # ── 額外開關 ──────────────────────────────────────────────────
 binary_sensor:
