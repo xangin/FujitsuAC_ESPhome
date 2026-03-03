@@ -1,78 +1,51 @@
-# FujitsuAC ESPHome Custom Component
+# FujitsuAC ESPHome
 
-富士通冷氣（Fujitsu AC）ESPHome custom component，透過 UART 與室內機通訊，整合至 Home Assistant。
+This project is built upon the excellent open-source work of [Benas09](https://github.com/Benas09). Special thanks to him for developing the [FujitsuAC](https://github.com/Benas09/FujitsuAC) Arduino library, which reverse-engineered the Fujitsu AC UART protocol and made this project possible.
 
----
-
-## ⚠ 重要安全警告
-
-**切勿將冷氣機上的任何接腳連接到外部設備（例如電腦）。**
-若將冷氣 GND 與筆電 GND 接觸，可能燒毀筆電 USB 埠及/或冷氣主板保險絲。
-冷氣接腳並非電氣隔離，其電壓並非相對於大地 GND。
+本專案建立在 [Benas09](https://github.com/Benas09) 出色的開源工作之上。感謝他開發 [FujitsuAC](https://github.com/Benas09/FujitsuAC) Arduino 程式庫，深入解析富士通冷氣的 UART 通訊協定，使本專案得以實現。
 
 ---
 
-## 硬體需求（零件清單）
+本專案以 AI 輔助將 [FujitsuAC](https://github.com/Benas09/FujitsuAC) 轉換為 ESPHome 的 custom component，讓你無需雲端服務，即可透過 ESP32 搭配 ESPHome 接入 Home Assistant 本地控制富士通空調。
+
+---
+
+## ⚠️ 重要安全警告
+
+**請勿將冷氣接腳直接連接至任何外部設備（如電腦）。**
+
+冷氣的接腳電壓並非相對於大地 GND，若不小心將冷氣 GND 與筆電 GND 接觸，可能導致：
+- 筆電 USB 埠永久損毀
+- 冷氣主板保險絲燒斷
+
+操作前請務必確認電氣隔離，並使用適當的電平轉換模組。
+
+---
+
+## 硬體需求
 
 | 零件 | 說明 |
 |------|------|
-| DC/DC 降壓模組（12V → 5V）| **選購 5V 輸出版本**，電壓選錯會燒毀冷氣 UART 介面 |
-| ESP32（30 pin）| 原作者使用標準 ESP32 Dev Module |
-| JST 4P 連接器（10cm/20cm）| 對應冷氣端 UTY-TFSXW1 的 4 pin 接頭 |
-| 萬用板（4×6 cm）| 需稍微裁切 |
-| 邏輯電位轉換器（Logic Level Converter）| 用於 3.3V ↔ 5V 訊號轉換 |
+| DC/DC 降壓模組（12V → 5V） | **請選購 5V 輸出版本**，電壓選錯將燒毀冷氣 UART 介面 |
+| ESP32 模組 | ESP32、ESP32-C3、ESP32-S3 皆相容 |
+| JST PAP-4 連接器（PA-2.0mm-4P） | 對應冷氣端 UTY-TFSXW1 的 4-pin 接頭 |
+| 5V → 3.3V 電平轉換模組 | 強烈建議使用，可有效防止 ESP 模組損毀 |
 
 ---
 
 ## 接線方式
 
-### JST 型連接器接線（4 pin，多數壁掛機型）
-
 ```
-冷氣插座        CN3903（DC-DC）           ESP32
-Pin 1 (+12V) → V in+ → V out+ ────────→ 5V
-Pin 2 (GND)  → V in- → V out- ────────→ GND
-Pin 3 (DATA) ─────────────────────────→ RX / GPIO16（冷氣 → ESP）
-Pin 4 (DATA) ─────────────────────────→ TX / GPIO17（ESP  → 冷氣）
+冷氣插座          DC/DC 降壓模組（12V → 5V）   ESP32
+Pin 1 (+12V)  →  Vin+  →  Vout+  ─────────→  5V
+Pin 2 (GND)   →  Vin-  →  Vout-  ─────────→  GND
+Pin 3 (DATA)  ──────────────────────────────→  RX / GPIO16（冷氣 → ESP）
+Pin 4 (DATA)  ──────────────────────────────→  TX / GPIO17（ESP → 冷氣）
 ```
 
-腳位順序由左至右為 1 2 3 4。
+腳位順序由左至右為 Pin 1～4。
 
-### USB 型連接器接線（4 pin，適用 UTY-TFSXF3 機型）
-
-```
-USB 型插座（由上至下）：
-Pin 1 → 12V
-Pin 2 → AC_TX → 接 ESP32 RX / GPIO16
-Pin 3 → AC_RX → 接 ESP32 TX / GPIO17
-Pin 4 → GND
-```
-
-> 📌 **注意**：富士通 UART 訊號為**反向邏輯**，需在 YAML 設定 `inverted: true`，或使用外接 NPN 電晶體反向電路。
-
----
-
-## 安裝
-
-1. 將本 `components/` 目錄放置於 ESPHome `yaml` 同一層目錄
-2. 在 YAML 中加入：
-   ```yaml
-   external_components:
-     - source:
-         type: local
-         path: components
-       components: [fujitsu_ac]
-   ```
-3. 參考 `fujitsu_ac_sample.yaml` 進行設定
-
----
-
-## 通訊協定
-
-- **鮑率**：9600 bps，8N1
-- **訊號**：反向 TTL（需 inverted RX/TX）
-- **格式**：自訂二進位封包（2-byte 地址 + 2-byte 值，16-bit checksum）
-- **週期**：每 400ms 輪詢一次，順序為 Init1 → Init2 → InitRegs1/2/3 → FrameA / FrameB / FrameC
+> 📌 **注意**：富士通 UART 訊號為**反向邏輯**，請在 ESPHome YAML 設定中加入 `inverted: true`。
 
 ---
 
@@ -80,36 +53,18 @@ Pin 4 → GND
 
 | 功能 | 說明 |
 |------|------|
-| 開關 | Power on/off |
-| 模式 | Auto / Cool / Heat / Dry / Fan |
-| 目標溫度 | 16～30°C（步進 0.5°C；Heating 最低 16°C，其他 18°C） |
+| 開關 | 電源 On / Off |
+| 運轉模式 | Auto / Cool / Heat / Dry / Fan |
+| 目標溫度 | 16～30°C（步進 0.5°C；Heating 最低 16°C，其他模式最低 18°C） |
 | 風速 | Auto / Quiet / Low / Medium / High |
-| 垂直風向 | Position 1～6 + Swing |
-| 水平風向 | Position 1～6 + Swing（需機型支援） |
-| 室內溫度 | ActualTemp 暫存器（0.1°C 解析度） |
-| 戶外溫度 | OutdoorTemp 暫存器（0.1°C 解析度） |
-
----
-
-## 檔案結構
-
-```
-FujitsuAC/
-├── components/
-│   └── fujitsu_ac/
-│       ├── __init__.py              # ESPHome component 定義
-│       ├── fujitsu_ac.h             # 主 Climate 類別
-│       ├── fujitsu_controller.h     # 通訊控制器（含 Buffer）
-│       ├── fujitsu_enums.h          # 列舉定義
-│       ├── fujitsu_register.h       # 暫存器與地址定義
-│       └── fujitsu_registry_table.h # 暫存器查詢表
-├── fujitsu_ac_sample.yaml           # 範例 YAML 設定
-└── README.md                        # 本說明文件
-```
+| 垂直風向 | 位置 1～6 + Swing 自動擺風 |
+| 水平風向 | 位置 1～6 + Swing 自動擺風（需機型支援） |
+| 室內溫度回報 | ActualTemp 暫存器，解析度 0.1°C |
+| 室外溫度回報 | OutdoorTemp 暫存器，解析度 0.1°C |
 
 ---
 
 ## 參考資料
 
-- 原始 FujitsuAC Arduino 程式庫：[github.com/Benas09/FujitsuAC](https://github.com/Benas09/FujitsuAC)
-- ESPHome Climate 文件：[esphome.io/components/climate/](https://esphome.io/components/climate/)
+- 原始 Arduino 程式庫：[github.com/Benas09/FujitsuAC](https://github.com/Benas09/FujitsuAC)
+- ESPHome Climate 元件文件：[esphome.io/components/climate/](https://esphome.io/components/climate/)
