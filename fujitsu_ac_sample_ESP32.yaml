@@ -2,7 +2,10 @@ substitutions:
   devicename: climate-fj          # 每台裝置需設定不同名稱，避免衝突
   upper_devicename: "Climate-FJ"
   model_name: "Climate-FJ"        # 可加註冷氣型號，例如 ASYG12KMTB
-
+  tx_pin: GPIO17                  # 根據不同ESP模組修改對應GPIO
+  rx_pin: GPIO16
+  led_pin: GPIO4
+  
 esphome:
   name: $devicename
   friendly_name: ${upper_devicename}
@@ -58,10 +61,10 @@ web_server:
 uart:
   id: fujitsu_uart
   tx_pin:
-    number: GPIO17      # ESP32 UART2 TX2 17
+    number: $tx_pin      # ESP32 UART2 TX2 17
     inverted: true      # 富士通需要反向訊號
   rx_pin:
-    number: GPIO16      # ESP32 UART2 RX2 16
+    number: $rx_pin      # ESP32 UART2 RX2 16
     inverted: true      # 富士通需要反向訊號
   baud_rate: 9600
   data_bits: 8
@@ -104,7 +107,7 @@ climate:
 # ── 狀態 LED ──────────────────────────────────────────────────
 status_led:
   pin:
-    number: GPIO4
+    number: $led_pin
 
 # ── 額外開關 ──────────────────────────────────────────────────
 binary_sensor:
