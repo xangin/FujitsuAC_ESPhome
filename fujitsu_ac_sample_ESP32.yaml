@@ -23,7 +23,7 @@ external_components:
 
 # ── 平台 ────────────────────────────────────────────────────────
 esp32:
-  variant: esp32
+  variant: esp32 # 此範例使用esp32模組
   framework:
     type: esp-idf
 
