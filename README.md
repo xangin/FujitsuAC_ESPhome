@@ -33,7 +33,24 @@ This project is built upon the excellent open-source work of [Benas09](https://g
 
 ---
 
+## 支援型號
+
+下圖為高級系列 (ASCGXXXKGTA)的接頭位置:
+
+<img src="img/mother_board.jpg" width="50%" />
+
+📌 **注意**：其他系列有可能沒有白色公座，需要自行焊接拉線!! 已知Nocria Z系列無插座
+
+新款KGTB系列有內建模組，需拆除改接此模組才行!
+
+
+---
+
 ## 接線方式
+
+接頭近照:
+
+<img src="img/connector.jpg" width="50%" />
 
 ```
 冷氣插座          DC/DC 降壓模組（12V → 5V）   ESP32
@@ -43,9 +60,6 @@ Pin 3 (DATA)  ──────────────────────
 Pin 4 (DATA)  ──────────────────────────────→  TX / GPIO17（ESP → 冷氣）
 ```
 
-腳位順序由左至右為 Pin 1～4。
-
-> 📌 **注意**：富士通 UART 訊號為**反向邏輯**，請在 ESPHome YAML 設定中加入 `inverted: true`。
 
 ---
 
