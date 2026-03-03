@@ -491,9 +491,14 @@ protected:
                     default: break;
                 }
             }
+            // 樂觀更新：立即反映模式到 HA，不等冷氣回應
+            this->mode = m;
         }
-        if (call.get_target_temperature().has_value())
+        if (call.get_target_temperature().has_value()) {
             controller_->setTemp(*call.get_target_temperature());
+            // 樂觀更新：立即反映目標溫度到 HA
+            this->target_temperature = *call.get_target_temperature();
+        }
         if (call.get_fan_mode().has_value()) {
             switch (*call.get_fan_mode()) {
                 case climate::CLIMATE_FAN_AUTO:   controller_->setFanSpeed(::fujitsu_ac_impl::FanSpeed::Auto);   break;
@@ -503,7 +508,12 @@ protected:
                 case climate::CLIMATE_FAN_QUIET:  controller_->setFanSpeed(::fujitsu_ac_impl::FanSpeed::Quiet);  break;
                 default: break;
             }
+            // 樂觀更新：立即反映風速到 HA
+            this->set_fan_mode_(*call.get_fan_mode());
         }
+        // 樂觀更新：立即發布狀態到 HA（不等冷氣回應確認）
+        // 備註：若冷氣有連接，後續冷氣回應會再次 publish_state() 以確保同步
+        this->publish_state();
     }
 
     climate::ClimateTraits traits() override {
