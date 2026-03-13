@@ -82,3 +82,4 @@ Pin 4 (DATA)  ──────────────────────
 
 - 原始 Arduino 程式庫：[github.com/Benas09/FujitsuAC](https://github.com/Benas09/FujitsuAC)
 - ESPHome Climate 元件文件：[esphome.io/components/climate/](https://esphome.io/components/climate/)
+- 感謝Hata協助測試與提供照片
